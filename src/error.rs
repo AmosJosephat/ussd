@@ -4,7 +4,6 @@ use axum::{
     Json,
 };
 use serde_json::json;
-use std::fmt;
 
 /// Application error types
 #[derive(Debug, thiserror::Error)]

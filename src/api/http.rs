@@ -25,7 +25,7 @@ pub struct AppState<S: SessionStore> {
 }
 
 /// Create HTTP router
-pub fn create_router<S: SessionStore + 'static>(state: AppState<S>) -> Router {
+pub fn create_router<S: SessionStore + Clone + 'static>(state: AppState<S>) -> Router {
     Router::new()
         .route("/health", get(health_check))
         .route("/metrics", get(metrics))

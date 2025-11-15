@@ -1,5 +1,4 @@
 use crate::domain::{MenuItem, MenuOption, MenuType, ValidationRules};
-use crate::error::Result;
 use std::collections::HashMap;
 
 /// Load default menus

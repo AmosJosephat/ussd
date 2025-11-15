@@ -1,8 +1,7 @@
 use axum::{
     extract::Request,
-    http::StatusCode,
     middleware::Next,
-    response::{IntoResponse, Response},
+    response::Response,
 };
 use governor::{
     clock::DefaultClock,
@@ -14,7 +13,7 @@ use std::num::NonZeroU32;
 
 pub type GlobalRateLimiter = Arc<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>;
 
-pub fn create_rate_limiter(requests: u32, window_secs: u64) -> GlobalRateLimiter {
+pub fn create_rate_limiter(requests: u32, _window_secs: u64) -> GlobalRateLimiter {
     let quota = Quota::per_second(NonZeroU32::new(requests).unwrap())
         .allow_burst(NonZeroU32::new(requests * 2).unwrap());
 

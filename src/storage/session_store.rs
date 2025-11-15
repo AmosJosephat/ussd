@@ -3,7 +3,7 @@ use crate::error::{Result, UssdError};
 use async_trait::async_trait;
 use redis::{aio::ConnectionManager, AsyncCommands};
 use std::time::Duration;
-use tracing::{debug, error, info};
+use tracing::{debug, info};
 
 const SESSION_PREFIX: &str = "ussd:session:";
 const PHONE_SESSIONS_PREFIX: &str = "ussd:phone_sessions:";
@@ -59,11 +59,11 @@ impl SessionStore for RedisSessionStore {
         let serialized = serde_json::to_string(&session)?;
 
         // Store session with TTL
-        conn.set_ex(&key, &serialized, self.ttl).await?;
+        conn.set_ex::<_, _, ()>(&key, &serialized, self.ttl).await?;
 
         // Add to phone number index
-        conn.sadd(&phone_key, &session.id).await?;
-        conn.expire(&phone_key, self.ttl as i64).await?;
+        conn.sadd::<_, _, ()>(&phone_key, &session.id).await?;
+        conn.expire::<_, ()>(&phone_key, self.ttl as i64).await?;
 
         info!(
             session_id = %session.id,
@@ -107,7 +107,7 @@ impl SessionStore for RedisSessionStore {
         let serialized = serde_json::to_string(&session)?;
 
         // Update session and reset TTL
-        conn.set_ex(&key, &serialized, self.ttl).await?;
+        conn.set_ex::<_, _, ()>(&key, &serialized, self.ttl).await?;
 
         debug!(
             session_id = %session.id,
@@ -127,10 +127,10 @@ impl SessionStore for RedisSessionStore {
             let phone_key = self.phone_sessions_key(&session.phone_number);
 
             // Remove session
-            conn.del(&key).await?;
+            conn.del::<_, ()>(&key).await?;
 
             // Remove from phone number index
-            conn.srem(&phone_key, session_id).await?;
+            conn.srem::<_, _, ()>(&phone_key, session_id).await?;
 
             info!(session_id = %session_id, "Session deleted");
         }
@@ -161,7 +161,7 @@ impl SessionStore for RedisSessionStore {
         Ok(sessions)
     }
 
-    async fn cleanup_expired(&self, max_age: Duration) -> Result<usize> {
+    async fn cleanup_expired(&self, _max_age: Duration) -> Result<usize> {
         // Redis handles expiration automatically via TTL
         // This method is here for interface compatibility
         debug!("Redis auto-expires sessions, manual cleanup not needed");

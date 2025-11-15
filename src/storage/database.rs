@@ -1,5 +1,5 @@
-use crate::domain::{Transaction, TransactionStatus, User, UserStatus};
-use crate::error::{Result, UssdError};
+use crate::domain::{Transaction, TransactionStatus, User};
+use crate::error::Result;
 use sqlx::{postgres::PgPoolOptions, PgPool, Postgres};
 use tracing::info;
 use uuid::Uuid;
