@@ -214,7 +214,20 @@ mod tests {
             validation: None,
         };
 
+        let option_menu = MenuItem {
+            id: "OPTION_1".to_string(),
+            title: [("en".to_string(), "You selected Option 1".to_string())]
+                .into_iter()
+                .collect(),
+            options: vec![],
+            menu_type: MenuType::Response,
+            handler: None,
+            parent: Some("START".to_string()),
+            validation: None,
+        };
+
         sm.register_menu(main_menu);
+        sm.register_menu(option_menu);
 
         let mut session = Session::new("+1234567890".to_string(), "*123#".to_string());
 
