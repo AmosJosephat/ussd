@@ -35,14 +35,14 @@ impl Database {
             RETURNING *
             "#,
         )
-        .bind(&user.id)
+        .bind(user.id)
         .bind(&user.phone_number)
         .bind(&user.name)
         .bind(&user.email)
         .bind(&user.language)
         .bind(&user.status)
-        .bind(&user.created_at)
-        .bind(&user.updated_at)
+        .bind(user.created_at)
+        .bind(user.updated_at)
         .fetch_one(&self.pool)
         .await?;
 
@@ -84,12 +84,12 @@ impl Database {
             RETURNING *
             "#,
         )
-        .bind(&user.id)
+        .bind(user.id)
         .bind(&user.name)
         .bind(&user.email)
         .bind(&user.language)
         .bind(&user.status)
-        .bind(&user.updated_at)
+        .bind(user.updated_at)
         .fetch_one(&self.pool)
         .await?;
 
@@ -114,14 +114,14 @@ impl Database {
             RETURNING *
             "#,
         )
-        .bind(&transaction.id)
-        .bind(&transaction.user_id)
+        .bind(transaction.id)
+        .bind(transaction.user_id)
         .bind(&transaction.session_id)
         .bind(&transaction.transaction_type)
-        .bind(&transaction.amount)
+        .bind(transaction.amount)
         .bind(&transaction.status)
         .bind(&transaction.metadata)
-        .bind(&transaction.created_at)
+        .bind(transaction.created_at)
         .fetch_one(&self.pool)
         .await?;
 

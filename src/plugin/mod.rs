@@ -72,7 +72,11 @@ impl PluginRegistry {
 
     /// Unregister a plugin
     pub async fn unregister(&self, name: &str) -> Result<()> {
-        if let Some(plugin) = self.plugins.write().remove(name) {
+        let plugin = {
+            self.plugins.write().remove(name)
+        };
+
+        if let Some(plugin) = plugin {
             plugin.shutdown().await?;
             info!(plugin_name = %name, "Plugin unregistered");
         }
