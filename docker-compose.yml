@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: ussd-postgres
+    environment:
+      POSTGRES_USER: ussd_user
+      POSTGRES_PASSWORD: ussd_password
+      POSTGRES_DB: ussd_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ussd_user -d ussd_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Session Management
+  redis:
+    image: redis:7-alpine
+    container_name: ussd-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # USSD Application
+  ussd-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ussd-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE__URL: postgresql://ussd_user:ussd_password@postgres:5432/ussd_db
+      REDIS__URL: redis://redis:6379
+      SERVER__HOST: 0.0.0.0
+      SERVER__PORT: 8080
+      RUST_LOG: info,ussd_advanced=debug
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  # Prometheus (Optional - for metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ussd-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    profiles:
+      - monitoring
+
+  # Grafana (Optional - for visualization)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ussd-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
